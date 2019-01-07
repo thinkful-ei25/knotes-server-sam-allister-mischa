@@ -3,10 +3,19 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const passport = require('passport');
 
 const { PORT, CLIENT_ORIGIN } = require('./config');
 const { dbConnect } = require('./db/db-mongoose');
 // const {dbConnect} = require('./db-knex');
+
+const usersRouter = require('./routes/users');
+const authRouter = require('./routes/auth');
+
+const {localStrategy, jwtStrategy} = require('./utils/strategies');
+
+passport.use(localStrategy);
+passport.use(jwtStrategy);
 
 const app = express();
 
