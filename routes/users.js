@@ -1,5 +1,4 @@
 'use strict';
-
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -9,11 +8,12 @@ const router = express.Router();
 
 const jsonParser = bodyParser.json();
 
-router.post('/', jsonParser, (req, res)=>{
+// Post to register a new user
+router.post('/', jsonParser, (req, res) => {
   const requiredFields = ['username', 'password'];
   const missingField = requiredFields.find(field => !(field in req.body));
 
-  if(missingField){
+  if (missingField) {
     return res.status(422).json({
       code: 422,
       reason: 'ValidationError',
@@ -36,6 +36,7 @@ router.post('/', jsonParser, (req, res)=>{
     });
   }
 
+  //trim the username and password because dont want white space
   const explicityTrimmedFields = ['username', 'password'];
   const nonTrimmedField = explicityTrimmedFields.find(
     field => req.body[field].trim() !== req.body[field]
@@ -59,7 +60,6 @@ router.post('/', jsonParser, (req, res)=>{
       max: 72
     }
   };
-
   const tooSmallField = Object.keys(sizedFields).find(
     field =>
       'min' in sizedFields[field] &&
@@ -85,11 +85,12 @@ router.post('/', jsonParser, (req, res)=>{
   }
 
   let {username, password, name} = req.body;
-
+  
   return User.find({username})
     .count()
     .then(count => {
-      if (count > 0){
+      if (count > 0) {
+        // There is an existing user with the same username
         return Promise.reject({
           code: 422,
           reason: 'ValidationError',
@@ -99,28 +100,35 @@ router.post('/', jsonParser, (req, res)=>{
       }
       return User.hashPassword(password);
     })
-    .then(hash=>{
+    .then(hash => {
+      console.log('you got here');
       return User.create({
         username,
         password: hash,
         name
       });
     })
-    .then(user =>{
+    .then(user => {
       return res.status(201).json(user.serialize());
     })
     .catch(err => {
-      if (err.reason === 'ValidationError'){
+      // Forward validation errors on to the client, otherwise give a 500
+      // error because something unexpected has happened
+      if (err.reason === 'ValidationError') {
         return res.status(err.code).json(err);
       }
-      res.status(500).json({code: 500, message: 'Internal Server Error'});
+      res.status(500).json({code: 500, message: 'Internal server error'});
     });
 });
 
-router.get('/', (req,res)=>{
+// Never expose all your users like below in a prod application
+// we're just doing this so we have a quick way to see
+// if we're creating users. keep in mind, you can also
+// verify this in the Mongo shell.
+router.get('/', (req, res) => {
   return User.find()
     .then(users => res.json(users.map(user => user.serialize())))
-    .catch(err => res.status(500).json({message: 'Internal Server Error'}));
+    .catch(err => res.status(500).json({message: 'Internal server error'}));
 });
 
 module.exports = router;
