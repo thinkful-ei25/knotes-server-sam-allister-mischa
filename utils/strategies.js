@@ -26,6 +26,7 @@ const localStrategy = new LocalStrategy((username, password, callback) => {
     .then(isValid => {
       if (!isValid) {
         return Promise.reject({
+          status: 401,
           reason: 'LoginError',
           message: 'Incorrect username or password'
         });
@@ -34,6 +35,7 @@ const localStrategy = new LocalStrategy((username, password, callback) => {
     })
     .catch(err => {
       if (err.reason === 'LoginError') {
+        console.log(err);
         return callback(null, false, err);
       }
       return callback(err, false);
