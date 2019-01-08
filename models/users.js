@@ -18,6 +18,8 @@ const UserSchema = mongoose.Schema({
     type: String,
     default: ''
   }
+  //add array for notes(questions)
+  //add next to know what question is next
 });
 
 UserSchema.methods.serialize = function() {
