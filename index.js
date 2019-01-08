@@ -14,7 +14,8 @@ const { dbConnect } = require('./db/db-mongoose');
 //routes to users and authentication
 const usersRouter = require('./routes/users');
 const authRouter = require('./routes/auth');
-const notesRouter = require('./routes/notes')
+const notesRouter = require('./routes/notes');
+const dataRouter = require('./routes/data');
 
 const {localStrategy, jwtStrategy} = require('./utils/strategies');
 
@@ -41,7 +42,8 @@ app.use(
 //mount routers
 app.use('/api/users', usersRouter);
 app.use('/auth', authRouter);
-app.use('/api/notes', notesRouter)
+app.use('/api/notes', notesRouter);
+app.use('/api/data', dataRouter);
 
 function runServer(port = PORT) {
   const server = app

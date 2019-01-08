@@ -3,13 +3,40 @@ const express = require('express');
 const bodyParser = require('body-parser');
 
 const User = require('../models/users');
+const Note = require('../models/notes');
 
 const router = express.Router();
 
 const jsonParser = bodyParser.json();
 
+function getNotes(req,res,next){
+  Note.find()
+    .then(notes=>{
+      //set score to 0, incorrect(0), correct(0), next(i+1)
+      let notes2 = notes.map((note,i)=>{
+        let next = '';
+        if(i<notes.length-1){
+          next = notes[i+1].note;
+        } else {
+          next = notes[0].note;
+        }
+        return note = {
+          note: note.note,
+          image: note.image,
+          sound: note.sound,
+          next,
+          score: 0,
+          incorrect: 0,
+          correct: 0
+        };
+      });
+      req.notes = notes2;
+      next();
+    });
+}
+
 // Post to register a new user
-router.post('/', jsonParser, (req, res) => {
+router.post('/', (jsonParser, getNotes), (req, res) => {
   const requiredFields = ['username', 'password'];
   const missingField = requiredFields.find(field => !(field in req.body));
 
@@ -100,18 +127,20 @@ router.post('/', jsonParser, (req, res) => {
       }
       return User.hashPassword(password);
     })
-    .then(hash => {
-      console.log('you got here');
+    .then((hash)=>{
       return User.create({
         username,
         password: hash,
-        name
+        name,
+        notes: req.notes,
+        next: req.notes[0].note
       });
     })
     .then(user => {
       return res.status(201).json(user.serialize());
     })
     .catch(err => {
+      console.log(err);
       // Forward validation errors on to the client, otherwise give a 500
       // error because something unexpected has happened
       if (err.reason === 'ValidationError') {
@@ -129,6 +158,10 @@ router.get('/', (req, res) => {
   return User.find()
     .then(users => res.json(users.map(user => user.serialize())))
     .catch(err => res.status(500).json({message: 'Internal server error'}));
+});
+
+router.get('/:id', (req,res)=>{
+
 });
 
 module.exports = router;
