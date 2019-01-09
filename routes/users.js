@@ -12,6 +12,7 @@ const jsonParser = bodyParser.json();
 function getNotes(req,res,next){
   Note.find()
     .then(notes=>{
+<<<<<<< HEAD
       let head;
       let i = notes.length-1;
       let temp = [];
@@ -22,6 +23,13 @@ function getNotes(req,res,next){
         note.correct = 0;
         if(i!==notes.length-1){
           note.next = notes[i+1];
+=======
+      //set score to 0, incorrect(0), correct(0), next(i+1)
+      let notes2 = notes.map((note,i)=>{
+        let next = '';
+        if(i<notes.length-1){
+          next = notes[i+1]
+>>>>>>> 98110c478782ad2f07bb3369a73e75f63ff24f71
         } else {
           note.next = null;
         }
@@ -137,7 +145,12 @@ router.post('/', (jsonParser, getNotes), (req, res) => {
         username,
         password: hash,
         name,
+<<<<<<< HEAD
         head: req.head
+=======
+        
+        head: req.notes[0]
+>>>>>>> 98110c478782ad2f07bb3369a73e75f63ff24f71
       });
     })
     .then(user => {
