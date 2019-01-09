@@ -9,28 +9,49 @@ const router = express.Router();
 
 const jsonParser = bodyParser.json();
 
+
+/* 
+  --> notes.next = null
+
+  --> Note.find --> [notes]
+  head = notes[0]
+
+  notes[0].next = notes[1] //-head.next
+  notes[1].next = notes[2] //- head.next.next
+
+*/
+
 function getNotes(req,res,next){
   Note.find()
     .then(notes=>{
-      //set score to 0, incorrect(0), correct(0), next(i+1)
-      let notes2 = notes.map((note,i)=>{
-        let next = '';
-        if(i<notes.length-1){
-          next = notes[i+1].note;
+      let head;
+      let i = notes.length-1;
+      let temp = [];
+      let j = -1;
+      while(i>=0){ 
+        let note = notes[i];
+
+        let next;
+        if(i!==notes.length-1){
+          next = temp[j];
         } else {
-          next = notes[0].note;
+          next = null;
         }
-        return note = {
+        let tempNote = {
           note: note.note,
           image: note.image,
           sound: note.sound,
-          next,
-          score: 0,
+          mScore: 1,
+          correct: 0,
           incorrect: 0,
-          correct: 0
+          next: next
         };
-      });
-      req.notes = notes2;
+        temp.push(tempNote); //[note.next = null, note.next = ]
+        j++;
+        i--;
+      }
+      head = temp[j];
+      req.head = head;
       next();
     });
 }
@@ -132,8 +153,7 @@ router.post('/', (jsonParser, getNotes), (req, res) => {
         username,
         password: hash,
         name,
-        notes: req.notes,
-        next: req.notes[0].note
+        head: req.head
       });
     })
     .then(user => {
