@@ -18,12 +18,6 @@ const UserSchema = mongoose.Schema({
     type: String,
     default: ''
   },
-  notes: {
-    type: Array,
-    default: [],
-    required: true
-    //array of objects: note, image, sound, next(linked list), score, correct, incorrect
-  },
   head: {
     type: Object
   }
@@ -44,7 +38,7 @@ UserSchema.methods.serialize2 = function(){
     username: this.username || '',
     name: this.name || '',
     id: this.id || '',
-    notes: this.notes || [],
+  
     head: this.head || ''
   };
 };

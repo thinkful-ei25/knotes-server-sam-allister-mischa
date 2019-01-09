@@ -21,6 +21,9 @@ const NoteSchema = mongoose.Schema({
   },
   sound: {
     type: String
+  },
+  next: {
+    type: Object
   }
 });
 
@@ -28,7 +31,8 @@ NoteSchema.methods.serialize = function(){
   return {
     note: this.note || '',
     image: this.image || '',
-    sound: this.sound || ''
+    sound: this.sound || '',
+    next: this.next || null
   };
 };
 

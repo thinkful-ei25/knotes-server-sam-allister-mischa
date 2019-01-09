@@ -16,7 +16,7 @@ function getNotes(req,res,next){
       let notes2 = notes.map((note,i)=>{
         let next = '';
         if(i<notes.length-1){
-          next = notes[i+1].serialize();
+          next = notes[i+1]
         } else {
           next = null;
         }
@@ -132,7 +132,7 @@ router.post('/', (jsonParser, getNotes), (req, res) => {
         username,
         password: hash,
         name,
-        notes: req.notes,
+        
         head: req.notes[0]
       });
     })

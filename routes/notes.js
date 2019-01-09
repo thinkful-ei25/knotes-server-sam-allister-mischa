@@ -10,21 +10,30 @@ function getNoteAtNext(req, res, next){
   const id = req.user.id;
   User.findOne({_id: id})
     .then((user) => {
-      const {notes, head} = user;
-      const noteToReturn = notes.filter((note) => {
-        if(note.note === head){
-          return note;
-        }
-      });
-      req.note = noteToReturn[0];
+      const {head} = user;
+      let notes;
+      while (head.next !== null) {
+        notes += head.note + ' '  
+      }
+      
+      req.note = notes;
     })
     .then(() => next())
     .catch(err => next(err));
 }
 
 
-router.get('/', getNoteAtNext, (req, res) => {
-  res.json(req.note);
+// router.get('/', getNoteAtNext, (req, res) => {
+//   res.json(req.note);
+// });
+
+router.get('/', (req,res)=>{
+  const id = req.user.id;
+  User.findOne({_id:id})
+  .then(user=>{
+      res.status(200);
+      res.json(user.head);
+  });
 });
 
 /*
@@ -58,6 +67,27 @@ function updateInCorrect(req, next, correct = false){
     //   {_id: id, 'notes.note' : req.note.note}, {$inc: {'notes.$.correct' : 1}}, {new: true}
     // )
    
+    /*
+    
+    
+    temp = head
+    curr = head
+    prev = null
+    while loop curr.next not equal null and count < temp.mscore
+      prev = curr
+      curr = curr.next
+      count++
+    prev.next = temp
+    temp.next = curr
+    head = head.next
+
+    
+
+
+    */
+
+    
+    
     User.findOne({_id: id})
       .then(user => {
         let notes = user.notes;
@@ -124,45 +154,104 @@ function updateNext(req, res, next){
 // // update next
 // });
 
+//     temp = head
+//     curr = head
+//     prev = null
+//     while loop curr.next not equal null and count < temp.mscore
+//       prev = curr
+//       curr = curr.next
+//       count++
+//     prev.next = temp
+//     temp.next = curr
+//     head = head.next
+
 router.put('/', getNoteAtNext, updateNext, (req, res, next) => {
   // update note with score
   const {answer} = req.body;
   const id = req.user.id;
-  let notes;
-  if(answer === req.note.note){
-    User.findOne({_id: id})
-      .then(user => {
-        let notes = user.notes;
-        let tempNote;
-        let temp;
-        notes.forEach((note,i) => {
-          if(note.note === req.note.note){
-            note.mScore*=2;
-            temp = note.mScore;
-            note.correct++;
-            tempNote = note;
-          }
-        });
-        let currNote = user.head;
-        let prevNote = user.head;
-        let count=0;
-        while((currNote.next!==null)&&(count<temp)){
-          prevNote = currNote;
-          currNote = currNote.next;
+  User.findOne({_id:id})
+    .then(user=>{
+      let head = user.head;
+      if(answer === head.note){
+        head.mScore *=2;
+        let index = head.mScore;
+        head.correct++;
+        let count = 0;
+        let temp = head;
+        let curr = head;
+        head = head.next;
+        let prev = null;
+        while((curr.next!== null)&&(count<index)){
+          prev = curr;
+          curr = curr.next;
           count++;
         }
-        prevNote.next = tempNote;
-        tempNote.next = currNote;
-        user.notes = notes;
-        console.log(user.notes);
-        return user.save();
-      })
-      .catch(err => console.log('err',err));
-  }else{
-    notes = updateInCorrect(req, next);  
-  }
-  res.sendStatus(201);
-  // update next
+        prev.next = temp;
+        temp.next = curr;
+        return head;
+      } else {
+        head.mScore = 1;
+        let index = head.mScore;
+        head.incorrect++;
+        let count = 0;
+        let temp = head;
+        let curr = head;
+        let prev = null;
+        while((curr.next!== null)&&(count<index)){
+          prev = curr;
+          curr = curr.next;
+          count++;
+        }
+        prev.next = temp;
+        temp.next = curr;
+        return head;
+      }
+    })
+    .then(head =>{
+      while(head.next!==null){  
+        console.log(head.note);
+        head = head.next;
+      }
+      //return User.findOneAndUpdate({_id:id}, {head : head}, {new: true});
+    });
 });
+    
+          
+          
+          
+
+
+        
+//         let tempNote;
+//         let temp;
+//         notes.forEach((note,i) => {
+//           if(note.note === req.note.note){
+//             note.mScore*=2;
+//             temp = note.mScore;
+//             note.correct++;
+//             tempNote = note;
+//           }
+//         });
+//         let currNote = user.head;
+//         let prevNote = user.head;
+//         let count=0;
+//         while((currNote.next!==null)&&(count<temp)){
+//           prevNote = currNote;
+//           currNote = currNote.next;
+//           count++;
+//         }
+//         prevNote.next = tempNote;
+//         tempNote.next = currNote;
+//         user.notes = notes;
+//         console.log(user.notes);
+//         return user.save();
+//       })
+//       .catch(err => console.log('err',err));
+//   }else{
+//     notes = updateInCorrect(req, next);  
+//   }
+//   res.sendStatus(201);
+//   // update next
+// });
 
 module.exports = router;
