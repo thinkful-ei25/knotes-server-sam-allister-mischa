@@ -12,25 +12,30 @@ const jsonParser = bodyParser.json();
 function getNotes(req,res,next){
   Note.find()
     .then(notes=>{
-      //set score to 0, incorrect(0), correct(0), next(i+1)
-      let notes2 = notes.map((note,i)=>{
-        let next = '';
-        if(i<notes.length-1){
-          next = notes[i+1].serialize();
+      let head;
+      let i = notes.length-1;
+      let temp = [];
+      while(i>=0){
+        let note = notes[i];
+        note.mScore = 1;
+        note.incorrect = 0;
+        note.correct = 0;
+        if(i!==notes.length-1){
+          note.next = notes[i+1];
         } else {
-          next = null;
+          note.next = null;
         }
-        return note = {
-          note: note.note,
-          image: note.image,
-          sound: note.sound,
-          next,
-          mScore: 1,
-          incorrect: 0,
-          correct: 0
-        };
-      });
-      req.notes = notes2;
+        temp.append(note);
+        i--;
+      }
+      head = temp[0];
+      let currNode = head;
+      let prevNode = head;
+      while(currNode.next!==null){
+        prevNode = currNode;
+        currNode = currNode.next;
+      }
+      req.head = head;
       next();
     });
 }
@@ -132,8 +137,7 @@ router.post('/', (jsonParser, getNotes), (req, res) => {
         username,
         password: hash,
         name,
-        notes: req.notes,
-        head: req.notes[0]
+        head: req.head
       });
     })
     .then(user => {
