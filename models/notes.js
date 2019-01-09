@@ -6,7 +6,7 @@ mongoose.Promise = global.Promise;
 
 /*
   Note(correct answer)
-  image link
+  image link (question)
   wav sound
 */
 
@@ -21,6 +21,25 @@ const NoteSchema = mongoose.Schema({
   },
   sound: {
     type: String
+  },
+  defaultOrder: {
+    type: Number,
+    required: true
+  },
+  mScore: {
+    type: Number,
+    required: true,
+    default: 1
+  },
+  correct: {
+    type: Number,
+    required: true,
+    default: 0
+  },
+  incorrect: {
+    type: Number,
+    required: true,
+    default: 0
   }
 });
 
@@ -28,7 +47,11 @@ NoteSchema.methods.serialize = function(){
   return {
     note: this.note || '',
     image: this.image || '',
-    sound: this.sound || ''
+    sound: this.sound || '',
+    defaultOrder: this.defaultOrder || 0,
+    mScore: this.mScore || 1,
+    correct: this.correct || 0,
+    incorrect: this.correct || 0
   };
 };
 

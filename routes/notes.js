@@ -6,78 +6,48 @@ const passport = require('passport');
 
 router.use('/', passport.authenticate('jwt', { session: false, failWithError: true }));
 
-function getNoteAtNext(req, res, next){
+router.put('/update',(req,res)=>{
+  console.log(req.body);
   const id = req.user.id;
-  User.findOne({_id: id})
-    .then((user) => {
-      const {notes, next} = user;
-      const noteToReturn = notes.filter((note) => {
-        if(note.note === next){
-          return note;
-        }
-      });
-      req.note = noteToReturn[0];
+  User.findOneAndUpdate({_id: id},{$set:{notes:req.body}})
+    .then(user=>{
+      res.status(201).json(user);
     })
-    .then(() => next())
-    .catch(err => next(err));
-}
-
-
-router.get('/', getNoteAtNext, (req, res) => {
-  res.json(req.note);
+    .catch(err=>{
+      console.log(err);
+      res.status(500).json({message:'Internal Server Error'});
+    });
 });
 
-function updateInCorrect(req, next, correct = false){
+router.put('/mScore/correct',(req,res)=>{
   const id = req.user.id;
-  if(correct){
-    User.findOneAndUpdate(
-      {_id: id, 'notes.note' : req.note.note}, {$inc: {'notes.$.correct' : 1}}, {new: true}
-    )
-      .then((notes) => {
-        return notes;
-      })
-      .catch(err => console.log('err',err));
-  }else{
-    User.findOneAndUpdate(
-      {_id: id, 'notes.note' : req.note.note}, {$inc: {'notes.$.incorrect' : 1}}, {new: true}
-    )
-      .then((notes) => {
-        return notes;
-      })
-      .catch(err => console.log('err',err));
-  }
-}
+  const i = req.body.i;
+  User.findOne({_id:id})
+    .then(user=>{
+      user.notes[i].mScore = (user.notes[i].mScore*2)+1;
+      user.notes.sort((a,b)=>a.mScore-b.mScore);
+      return user.save();
+    })
+    .then(sorted =>{
+      console.log('sorted', sorted);
+      res.send(sorted);
+    });
+});
 
-
-function updateNext(req, res, next){
+router.put('/mScore/incorrect', (req,res)=>{
   const id = req.user.id;
-  User.findOne({_id: id}, {notes: {$elemMatch: {note: req.note.note}}})
-    .then((notes) => {
-      return notes.notes[0].next;
+  const i = req.body.i;
+  User.findOne({_id: id})
+    .then(user=>{
+      user.notes[i].mScore = 1;
+      user.notes = [...user.notes.slice(1,6),user.notes[0], ...user.notes.slice(6)];
+      return user.save();
     })
-    .then(nextNote => {
-        console.log('next note is', nextNote);
-        return User.findOneAndUpdate({_id: id}, {next: nextNote}, {new: true} );
-    })
-    .then(updatedNote => {
-        console.log('nooottesss', updatedNote);
-        next();
-    })
-    .catch(err => next(err));
-}
+    .then(sorted =>{
+      console.log('sorted', sorted);
+      res.send(sorted);
+    });
 
-// update notes with score and update next if btn pressed
-router.put('/', getNoteAtNext, updateNext, (req, res, next) => {
-// update note with score
-  const {answer} = req.body;
-  let notes;
-  if(answer === req.note.note){
-    notes = updateInCorrect(req, next, true);
-  }else{
-    notes = updateInCorrect(req, next);  
-  }
-  res.sendStatus(201);
-// update next
 });
 
 module.exports = router;

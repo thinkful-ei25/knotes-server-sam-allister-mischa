@@ -25,7 +25,7 @@ function getNotes(req,res,next){
           image: note.image,
           sound: note.sound,
           next,
-          score: 0,
+          mScore: 0,
           incorrect: 0,
           correct: 0
         };
