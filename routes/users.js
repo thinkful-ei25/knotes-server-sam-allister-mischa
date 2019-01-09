@@ -16,16 +16,16 @@ function getNotes(req,res,next){
       let notes2 = notes.map((note,i)=>{
         let next = '';
         if(i<notes.length-1){
-          next = notes[i+1].note;
+          next = notes[i+1].serialize();
         } else {
-          next = notes[0].note;
+          next = null;
         }
         return note = {
           note: note.note,
           image: note.image,
           sound: note.sound,
           next,
-          score: 0,
+          mScore: 1,
           incorrect: 0,
           correct: 0
         };
@@ -133,7 +133,7 @@ router.post('/', (jsonParser, getNotes), (req, res) => {
         password: hash,
         name,
         notes: req.notes,
-        next: req.notes[0].note
+        head: req.notes[0]
       });
     })
     .then(user => {
