@@ -42,6 +42,7 @@ function updateInCorrect(req, next, correct = false){
       {_id: id, 'notes.note' : req.note.note}, {$inc: {'notes.$.incorrect' : 1}}, {new: true}
     )
       .then((notes) => {
+        console.log('updated notes:', notes)
         return notes;
       })
       .catch(err => console.log('err',err));
@@ -56,11 +57,11 @@ function updateNext(req, res, next){
       return notes.notes[0].next;
     })
     .then(nextNote => {
-        console.log('next note is', nextNote);
+        // console.log('next note is', nextNote);
         return User.findOneAndUpdate({_id: id}, {next: nextNote}, {new: true} );
     })
     .then(updatedNote => {
-        console.log('nooottesss', updatedNote);
+        // console.log('nooottesss', updatedNote);
         next();
     })
     .catch(err => next(err));
@@ -76,7 +77,7 @@ router.put('/', getNoteAtNext, updateNext, (req, res, next) => {
   }else{
     notes = updateInCorrect(req, next);  
   }
-  res.sendStatus(201);
+  res.sendStatus(200);
 // update next
 });
 
