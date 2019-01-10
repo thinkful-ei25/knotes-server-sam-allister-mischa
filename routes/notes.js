@@ -76,7 +76,7 @@ router.put('/', (req, res, next) => {
         feedback = 'false';
         head.mScore = 1;
         let index = head.mScore;
-        head.correct++;
+        head.incorrect++;
         let count = 0;
         let temp = head;
         let curr = head;
