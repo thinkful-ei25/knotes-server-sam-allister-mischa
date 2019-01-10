@@ -22,8 +22,6 @@ const UserSchema = mongoose.Schema({
     type: Object,
     required: true
   }
-  //add array for notes(questions)
-  //add next to know what question is next
 });
 
 UserSchema.methods.serialize = function() {
