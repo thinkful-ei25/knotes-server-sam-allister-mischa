@@ -9,8 +9,8 @@ router.use('/', passport.authenticate('jwt', { session: false, failWithError: tr
 
 
 router.get('/', (req, res, next) => {
-  const _id = req.user.id;
-  User.findOne({ _id })
+  const id = req.user._id;
+  User.findOne({ _id: id })
     .then(user => {
       console.log(user.head.next.image);
       res.json({note: user.head.image, next: user.head.next.image});
@@ -20,7 +20,28 @@ router.get('/', (req, res, next) => {
     });
 });
 
-
+router.get('/progress', (req,res)=>{
+  const id = req.user._id;
+  User.findOne({_id:id})
+    .then(user=>{
+      let progress = [];
+      let currNode = user.head;
+      while(currNode!==null){
+        let noteScore = {
+          note: currNode.note,
+          mScore: currNode.mScore,
+          correct: currNode.correct,
+          incorrect: currNode.incorrect
+        };
+        progress.push(noteScore);
+        currNode = currNode.next;
+      }
+      return progress;
+    })
+    .then(arr=>{
+      res.json(arr);
+    });
+});
 
 
 // update notes with score and update next if btn pressed
@@ -28,7 +49,7 @@ router.put('/', (req, res, next) => {
   // update note with score
   const { answer } = req.body;
   console.log('answer:', answer);
-  const id = req.user.id;
+  const id = req.user._id;
   User.findOne({ _id: id })
     .then(user => {
       let feedback;
