@@ -25,9 +25,12 @@ function getNoteAtNext(req, res, next) {
 
 router.get('/', (req, res) => {
   const _id = req.user.id;
-  User.find({_id})
-    .then((user) => res.json(user));
+  User.findOne({ _id })
+    .then((user) => {
+      console.log(user.head.next.image)
+      res.json({note: user.head.image, next: user.head.next.image});
 
+    });
 });
 
 function updateInCorrect(req, next, correct = false) {
@@ -45,12 +48,7 @@ function updateInCorrect(req, next, correct = false) {
       { _id: id, 'notes.note': req.note.note }, { $inc: { 'notes.$.incorrect': 1 } }, { new: true }
     )
       .then((notes) => {
-<<<<<<< HEAD
-        console.log('updated notes:', notes)
-||||||| merged common ancestors
-=======
         console.log('updated notes:', notes);
->>>>>>> feature/algorithm
         return notes;
       })
       .catch(err => console.log('err', err));
@@ -65,28 +63,12 @@ function updateNext(req, res, next) {
       return notes.notes[0].next;
     })
     .then(nextNote => {
-<<<<<<< HEAD
-        // console.log('next note is', nextNote);
-        return User.findOneAndUpdate({_id: id}, {next: nextNote}, {new: true} );
-||||||| merged common ancestors
-        console.log('next note is', nextNote);
-        return User.findOneAndUpdate({_id: id}, {next: nextNote}, {new: true} );
-=======
       // console.log('next note is', nextNote);
       return User.findOneAndUpdate({ _id: id }, { next: nextNote }, { new: true });
->>>>>>> feature/algorithm
     })
     .then(updatedNote => {
-<<<<<<< HEAD
-        // console.log('nooottesss', updatedNote);
-        next();
-||||||| merged common ancestors
-        console.log('nooottesss', updatedNote);
-        next();
-=======
       // console.log('nooottesss', updatedNote);
       next();
->>>>>>> feature/algorithm
     })
     .catch(err => next(err));
 }
@@ -94,35 +76,17 @@ function updateNext(req, res, next) {
 // update notes with score and update next if btn pressed
 router.put('/', (req, res, next) => {
   // update note with score
-  const {answer} = req.body;
-<<<<<<< HEAD
-  let notes;
-  if(answer === req.note.note){
-    notes = updateInCorrect(req, next, true);
-  }else{
-    notes = updateInCorrect(req, next);  
-  }
-  res.sendStatus(200);
-// update next
-||||||| merged common ancestors
-  let notes;
-  if(answer === req.note.note){
-    notes = updateInCorrect(req, next, true);
-  }else{
-    notes = updateInCorrect(req, next);  
-  }
-  res.sendStatus(201);
-// update next
-=======
+  const { answer } = req.body;
+  console.log('answer:', answer)
   const id = req.user.id;
-  User.findOne({_id:id})
-    .then(user=>{
+  User.findOne({ _id: id })
+    .then(user => {
       let feedback;
       let head = user.head;
-      if(answer === head.note){
+      if (answer === head.note) {
         feedback = 'true';
         console.log('THIS IS A PRINT:', answer);
-        head.mScore *=2;
+        head.mScore *= 2;
         let index = head.mScore;
         head.correct++;
         let count = 0;
@@ -130,7 +94,7 @@ router.put('/', (req, res, next) => {
         let curr = head;
         head = head.next;
         let prev = null;
-        while((curr!== null)&&(count<=index)){
+        while ((curr !== null) && (count <= index)) {
           prev = curr;
           curr = curr.next;
           count++;
@@ -147,7 +111,7 @@ router.put('/', (req, res, next) => {
         let curr = head;
         head = head.next;
         let prev = null;
-        while((curr!== null)&&(count<=index)){
+        while ((curr !== null) && (count <= index)) {
           prev = curr;
           curr = curr.next;
           count++;
@@ -155,12 +119,12 @@ router.put('/', (req, res, next) => {
         prev.next = temp;
         temp.next = curr;
       }
-      return ({head, feedback});
+      return ({ head, feedback });
     })
-    .then(({head, feedback}) =>{
+    .then(({ head, feedback }) => {
       let temp = head;
       let printed = '';
-      while(temp){
+      while (temp) {
         printed += temp.note + ' -> ';
         temp = temp.next;
       }
@@ -170,21 +134,20 @@ router.put('/', (req, res, next) => {
       //     console.log(temp.note);
       //     temp = temp.next;
       //   }
-      User.findOneAndUpdate({_id:id}, {head : head}, {new: true})
-        .then(({head}) => {
+      User.findOneAndUpdate({ _id: id }, { head: head }, { new: true })
+        .then(({ head }) => {
           console.log('new head', head.note);
-          res.json({head : head.note,feedback});
+          res.json({ next: head.next.image, feedback });
         })
         .catch(err => next(err));
     })
     .catch(err => next(err));
->>>>>>> feature/algorithm
 });
 
 module.exports = router;
 
 
-/* 
+/*
     [A]
 
 
