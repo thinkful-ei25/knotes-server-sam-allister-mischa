@@ -6,114 +6,74 @@ const passport = require('passport');
 
 router.use('/', passport.authenticate('jwt', { session: false, failWithError: true }));
 
-function getNoteAtNext(req, res, next) {
-  const id = req.user.id;
-  User.findOne({ _id: id })
-    .then((user) => {
-      const { notes, next } = user;
-      const noteToReturn = notes.filter((note) => {
-        if (note.note === next) {
-          return note;
-        }
-      });
-      req.note = noteToReturn[0];
-    })
-    .then(() => next())
-    .catch(err => next(err));
-}
 
 
 router.get('/', (req, res) => {
-  const _id = req.user.id;
-  User.find({_id})
-    .then((user) => res.json(user));
-
+  res.json(req.note);
 });
 
-function updateInCorrect(req, next, correct = false) {
+router.get('/first', (req,res)=>{
   const id = req.user.id;
-  if (correct) {
-    User.findOneAndUpdate(
-      { _id: id, 'notes.note': req.note.note }, { $inc: { 'notes.$.correct': 1 } }, { new: true }
-    )
-      .then((notes) => {
-        return notes;
-      })
-      .catch(err => console.log('err', err));
-  } else {
-    User.findOneAndUpdate(
-      { _id: id, 'notes.note': req.note.note }, { $inc: { 'notes.$.incorrect': 1 } }, { new: true }
-    )
-      .then((notes) => {
-<<<<<<< HEAD
-        console.log('updated notes:', notes)
-||||||| merged common ancestors
-=======
-        console.log('updated notes:', notes);
->>>>>>> feature/algorithm
-        return notes;
-      })
-      .catch(err => console.log('err', err));
-  }
-}
+  User.findOne({_id:id})
+    .then(user=>{
+      return user.head.note;
+    })
+    .then(note=>{
+      res.json(note);
+    });
+});
 
-
-function updateNext(req, res, next) {
+router.get('/progress', (req,res)=>{
   const id = req.user.id;
-  User.findOne({ _id: id }, { notes: { $elemMatch: { note: req.note.note } } })
-    .then((notes) => {
-      return notes.notes[0].next;
+  User.findOne({_id:id})
+    .then(user=>{
+      let progress = [];
+      let currNode = user.head;
+      while(currNode!==null){
+        let noteScore = {
+          note: currNode.note,
+          mScore: currNode.mScore,
+          correct: currNode.correct,
+          incorrect: currNode.incorrect
+        };
+        progress.push(noteScore);
+        currNode = currNode.next;
+      }
+      return progress;
     })
-    .then(nextNote => {
-<<<<<<< HEAD
-        // console.log('next note is', nextNote);
-        return User.findOneAndUpdate({_id: id}, {next: nextNote}, {new: true} );
-||||||| merged common ancestors
-        console.log('next note is', nextNote);
-        return User.findOneAndUpdate({_id: id}, {next: nextNote}, {new: true} );
-=======
-      // console.log('next note is', nextNote);
-      return User.findOneAndUpdate({ _id: id }, { next: nextNote }, { new: true });
->>>>>>> feature/algorithm
-    })
-    .then(updatedNote => {
-<<<<<<< HEAD
-        // console.log('nooottesss', updatedNote);
-        next();
-||||||| merged common ancestors
-        console.log('nooottesss', updatedNote);
-        next();
-=======
-      // console.log('nooottesss', updatedNote);
-      next();
->>>>>>> feature/algorithm
-    })
-    .catch(err => next(err));
-}
+    .then(arr=>{
+      res.json(arr);
+    });
+});
 
-// update notes with score and update next if btn pressed
+/*
+    When correct:
+    double mScore and increment notes.note.correct by 1
+    When incorrect:
+    set mScore back to 1 and increment notes.note.incorrect by 1
+
+
+    Move currentNote to index mScore, next note in index mScore changed to currentNote
+
+    [A,B,C,D,E,F]
+
+    head = A
+    A.next = B
+    *get question right*
+    A.correct++ - done
+    A.mScore*2 - WIP
+    head = A.next - done
+    *loop thru notes*
+    temp (D) = notes[A.mScore].next
+    notes[A.mScore].next = A
+    A.next = temp (D)
+    [B,C,A,D,E,F]
+*/
+
+
 router.put('/', (req, res, next) => {
   // update note with score
   const {answer} = req.body;
-<<<<<<< HEAD
-  let notes;
-  if(answer === req.note.note){
-    notes = updateInCorrect(req, next, true);
-  }else{
-    notes = updateInCorrect(req, next);  
-  }
-  res.sendStatus(200);
-// update next
-||||||| merged common ancestors
-  let notes;
-  if(answer === req.note.note){
-    notes = updateInCorrect(req, next, true);
-  }else{
-    notes = updateInCorrect(req, next);  
-  }
-  res.sendStatus(201);
-// update next
-=======
   const id = req.user.id;
   User.findOne({_id:id})
     .then(user=>{
@@ -178,16 +138,15 @@ router.put('/', (req, res, next) => {
         .catch(err => next(err));
     })
     .catch(err => next(err));
->>>>>>> feature/algorithm
+});
+
+router.get('/', (req,res)=>{
+  const id = req.user.id;
+  User.findOne({_id:id})
+    .then(user=>{
+      res.status(200);
+      res.json(user.serialize2());
+    });
 });
 
 module.exports = router;
-
-
-/* 
-    [A]
-
-
-
-
-*/

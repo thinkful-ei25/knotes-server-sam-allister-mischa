@@ -12,13 +12,10 @@ const jsonParser = bodyParser.json();
 
 /* 
   --> notes.next = null
-
   --> Note.find --> [notes]
   head = notes[0]
-
   notes[0].next = notes[1] //-head.next
   notes[1].next = notes[2] //- head.next.next
-
 */
 
 function getNotes(req,res,next){
