@@ -19,25 +19,14 @@ const localAuth = passport.authenticate('local', {session: false});
 router.use(bodyParser.json());
 
 router.post('/login', localAuth, (req,res)=>{
-  console.log(req.user);
-  let user ={
-    id: req.user._id,
-    username: req.user.username,
-    name: req.user.name || ''
-  };
-  const authToken = createAuthToken(user);
+  const authToken = createAuthToken(req.user);
   res.json({authToken});
 });
 
 const jwtAuth = passport.authenticate('jwt', {session: false});
 
 router.post('/refresh', jwtAuth, (req,res)=>{
-  let user ={
-    id: req.user._id,
-    username: req.user.username,
-    name: req.user.name || ''
-  };
-  const authToken = createAuthToken(user);
+  const authToken = createAuthToken(req.user);
   res.json({authToken});
 });
 
