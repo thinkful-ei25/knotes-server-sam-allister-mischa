@@ -40,7 +40,6 @@ function getNotes(req,res,next){
         let tempNote = {
           note: note.note,
           image: note.image,
-          sound: note.sound,
           mScore: 1,
           correct: 0,
           incorrect: 0,

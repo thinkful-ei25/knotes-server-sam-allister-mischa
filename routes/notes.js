@@ -1,6 +1,7 @@
 'use strict';
 const express = require('express');
 const User = require('../models/users');
+const Sound = require('../models/sounds');
 const router = express.Router();
 const passport = require('passport');
 
@@ -12,8 +13,12 @@ router.get('/', (req, res, next) => {
   const id = req.user._id;
   User.findOne({ _id: id })
     .then(user => {
-      console.log(user.head.next.image);
-      res.json({note: user.head.image, next: user.head.next.image});
+      console.log(user.head);
+      Sound.findOne({note: user.head.note})
+        .then(sound => {
+          res.json({note: user.head.image, next: user.head.next.image, sound });
+        })
+        .catch(err => next(err));
     })
     .catch(err=>{
       next(err);
