@@ -70,7 +70,7 @@ router.put('/', (req, res, next) => {
       let feedback;
       let head = user.head;
       if (answer === head.note) {
-        feedback = 'true';
+        feedback = 'Correct, you got that right!';
         head.mScore *= 2;
         let index = head.mScore;
         head.correct++;
@@ -87,7 +87,7 @@ router.put('/', (req, res, next) => {
         prev.next = temp;
         temp.next = curr;
       } else {
-        feedback = 'false';
+        feedback = 'Incorrect, the correct answer was ' + head.note;
         head.mScore = 1;
         let index = head.mScore;
         head.incorrect++;
