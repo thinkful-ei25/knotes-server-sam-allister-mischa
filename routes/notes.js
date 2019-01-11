@@ -13,12 +13,7 @@ router.get('/', (req, res, next) => {
   const id = req.user._id;
   User.findOne({ _id: id })
     .then(user => {
-      console.log(user.head);
-      Sound.findOne({note: user.head.note})
-        .then(sound => {
-          res.json({note: user.head.image, next: user.head.next.image, sound });
-        })
-        .catch(err => next(err));
+      res.json({note: user.head.image, next: user.head.next.image});
     })
     .catch(err=>{
       next(err);
@@ -48,12 +43,27 @@ router.get('/progress', (req,res)=>{
     });
 });
 
+router.get('/sound', (req,res,next)=>{
+  const id = req.user._id;
+  User.findOne({_id: id})
+    .then(user=>{
+      Sound.findOne({note: user.head.note})
+        .then(sound=>{
+          res.json(sound);
+        })
+        .catch(err=>{
+          next(err);
+        });
+    })
+    .catch(err=>{
+      next(err);
+    });
+});
 
 // update notes with score and update next if btn pressed
 router.put('/', (req, res, next) => {
   // update note with score
   const { answer } = req.body;
-  console.log('answer:', answer);
   const id = req.user._id;
   User.findOne({ _id: id })
     .then(user => {
@@ -61,7 +71,6 @@ router.put('/', (req, res, next) => {
       let head = user.head;
       if (answer === head.note) {
         feedback = 'true';
-        console.log('THIS IS A PRINT:', answer);
         head.mScore *= 2;
         let index = head.mScore;
         head.correct++;
@@ -98,22 +107,9 @@ router.put('/', (req, res, next) => {
       return ({ head, feedback });
     })
     .then(({ head, feedback }) => {
-      let temp = head;
-      let printed = '';
-      while (temp) {
-        printed += temp.note + ' -> ';
-        temp = temp.next;
-      }
-      console.log(printed);
-      //   let temp = head;
-      //   while(temp !==null){  
-      //     console.log(temp.note);
-      //     temp = temp.next;
-      //   }
       User.findOneAndUpdate({ _id: id }, { head: head }, { new: true })
         .then(({ head }) => {
-          console.log('new head', head.note);
-          res.json({ next: head.next.image, feedback });
+          res.json({ next: head.next.image, feedback});
         })
         .catch(err => next(err));
     })
