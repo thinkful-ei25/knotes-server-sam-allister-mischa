@@ -20,7 +20,7 @@ const NoteSchema = mongoose.Schema({
     required: true
   },
   sound: {
-    type: String
+    type: Object
   }
 });
 
